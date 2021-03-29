@@ -9,7 +9,7 @@ from pypinyin import pinyin, lazy_pinyin
 """
     Author:
         Zhang Cheng
-    99藏书网
+    鲲弩小说
 """
 
 def get_content(target):
