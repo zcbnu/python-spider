@@ -1,0 +1,10 @@
+{
+  "url": "http://www.qutxt.com",
+  "failure_str": "趣书网-公益404",
+  "resort_chapter": true,
+  "delimiter": "\n",
+  "chapter_root_element": [{"name": "div","id": "content-list"}],
+  "chapter_elements": {"name": "a", "target": "_blank"},
+  "content_root_element": [{"name": "div", "id": "nr1"}],
+  "content_elements": {"name": "p"}
+}

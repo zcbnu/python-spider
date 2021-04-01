@@ -1,0 +1,11 @@
+{
+  "url": "http://m.sbkk8.com",
+  "failure_str": "404错误页面",
+  "resort_chapter": false,
+  "delimiter": "\n",
+  "chapter_root_element": [{"name": "div","attrs": {"class": "index_list"}}],
+  "chapter_elements": {"name": "a", "target": "_blank"},
+  "content_root_element": [{"name": "div", "attrs": {"class":"articleContent"}}],
+  "content_elements": {"name": "p"},
+  "second_dir_elements": [{"name": "div", "attrs": {"class": "kind"}, "sub": {"name": "a"}},{"name": "div","attrs": {"class": "mnav"}, "sub": {"name": "a"}}]
+}

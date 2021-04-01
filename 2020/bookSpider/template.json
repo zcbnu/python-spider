@@ -1,0 +1,10 @@
+{
+  "url": "https://www.kunnu.com",
+  "failure_str": "Error 404",
+  "resort_chapter": false,
+  "delimiter": "\n",
+  "chapter_root_element": [{"name": "div","id": "content-list"}],
+  "chapter_elements": {"name": "a", "target": "_blank"},
+  "content_root_element": [{"name": "div", "id": "nr1"}],
+  "content_elements": {"name": "p"}
+}
