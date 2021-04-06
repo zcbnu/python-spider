@@ -2,8 +2,9 @@ import os
 import re
 import json
 import requests
+import DecodeParagraph
 from BookPathGuess import BookPathGuess
-from bs4 import BeautifulSoup, NavigableString
+from bs4 import BeautifulSoup
 from tqdm import tqdm
 import spiderUtils
 import GuessBook
@@ -55,13 +56,12 @@ class BookSite:
     def _check_book_index_page_valid(self, html):
         return html.find(self.get("failure_str")) < 0
 
-    def get_chapter_bs(self, html, element_root_str, elements_str):
-        base_chapter_bs = BeautifulSoup(html, 'lxml')
+    def get_chapter_bs(self, base_chapter_bs, element_root_str, elements_str):
         index_elements = self.get(element_root_str)
         for element in index_elements:
             if "name" not in element:
                 raise Exception("{0} format error. key 'name' no found in element {1}".format(element_root_str, element))
-            name = element['name']
+            name = element["name"]
             if "id" in element:
                 chapter_bs = base_chapter_bs.find(name, id=element["id"])
             elif "target" in element:
@@ -79,12 +79,32 @@ class BookSite:
             raise Exception("{0} format error. key 'name' no found in element {1}".format(elements_str, chapter_element))
         name = chapter_element["name"]
         if "id" in chapter_element:
-            chapter_bs = chapter_bs.find_all(name, id=chapter_element["id"])
+            tmp = chapter_bs.find_all(name, id=chapter_element["id"])
         elif "target" in chapter_element:
-            chapter_bs = chapter_bs.find_all(name, target=chapter_element["target"])
+            tmp = chapter_bs.find_all(name, target=chapter_element["target"])
         else:
-            chapter_bs = chapter_bs.find_all(name)
-        return chapter_bs
+            tmp = chapter_bs.find_all(name)
+        ret = []
+        if "ignores" not in chapter_element:
+            ret = tmp
+        else:
+            ignore_e = chapter_element["ignores"]
+            for t_bs in tmp:
+                mark = True
+                for ignore in ignore_e:
+                    for key, val in ignore.items():
+                        v = t_bs.get(key)
+                        if isinstance(v, list):
+                            v = " ".join(v)
+                        if v == val:
+                            mark = False
+                            break
+                    if not mark:
+                        break
+                if mark:
+                    ret.append(t_bs)
+
+        return ret
 
     def _sort_chapters(self, chapter_bs):
         if self.get("resort_chapter"):
@@ -101,8 +121,9 @@ class BookSite:
             result = re.sub(fm["replace"][0], fm["replace"][1], content.text)
         return result
 
-    def _join_content(self, content_bs):
-        content = map(lambda i: self._format_content(i), content_bs)
+    def _join_content(self, content_bs, base_bs):
+        content = [self._format_content(i) for i in content_bs]
+        content = DecodeParagraph.decode_paragraph(content, base_bs, self.json)
         return self.get('delimiter').join(content)
 
     def _get_book_file_name(self, book_name):
@@ -117,7 +138,8 @@ class BookSite:
         html = self._guess_book_url(book_name)
         if not html:
             raise Exception("Cannot find valid book url for {0}".format(book_name))
-        chapter_bs = self.get_chapter_bs(html, "chapter_root_element", "chapter_elements")
+        base_bs = BeautifulSoup(html, 'lxml')
+        chapter_bs = self.get_chapter_bs(base_bs, "chapter_root_element", "chapter_elements")
         chapter_bs = self._sort_chapters(chapter_bs)
         book_file = self._get_book_file_name(book_name)
         if self.debug:
@@ -138,10 +160,11 @@ class BookSite:
                 continue
             visited.append(url)
             content_html = self.get_content_html(url)
-            content_bs = self.get_chapter_bs(content_html, "content_root_element", "content_elements")
+            base_bs = BeautifulSoup(content_html, 'lxml')
+            content_bs = self.get_chapter_bs(base_bs, "content_root_element", "content_elements")
             if self.debug:
                 print("Content length", len(content_bs))
-            content = self._join_content(content_bs)
+            content = self._join_content(content_bs, base_bs)
             if self.downloadFile:
                 with open(book_file, 'a', encoding='utf-8') as f:
                     f.write(chapter_name)
@@ -163,7 +186,8 @@ class BookSite:
             url = f"{website}{url}"
         req = requests.get(url=url)
         req.encoding = 'utf-8'
-        print("URL", url, "response==", req.text)
+        if self.debug:
+            print("URL", url, "response==", req.text)
         encoding = self.get("encoding")
         if not encoding:
             req.encoding = 'utf-8'
