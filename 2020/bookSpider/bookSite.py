@@ -5,6 +5,8 @@ import requests
 from BookPathGuess import BookPathGuess
 from bs4 import BeautifulSoup, NavigableString
 from tqdm import tqdm
+import spiderUtils
+import GuessBook
 
 
 class BookSite:
@@ -44,56 +46,11 @@ class BookSite:
     def _second_dir_elements(self, site):
         response_bs = BeautifulSoup(self.get_content_html(site), 'lxml')
         elements = self.get("second_dir_elements")
-        results = []
-        for element in elements:
-            bs = response_bs.find_all(element['name'], element['attrs'])
-            sub = element['sub']
-
-            stack = bs
-            while sub is not None:
-                sub_stack = []
-                while len(stack) > 0:
-                    cur = stack.pop()
-                    if "attrs" in sub:
-                        children = cur.find_all(sub['name'], sub["attrs"])
-                    else:
-                        children = cur.find_all(sub['name'])
-                    sub_stack = sub_stack + children
-                stack = sub_stack
-                if "sub" in sub:
-                    sub = sub['sub']
-                else:
-                    sub = None
-            results = results + stack
+        results = spiderUtils.get_page_elements(response_bs, elements)
         return results
 
     def _guess_book_url(self, book_name):
-        url = self.get("url")
-        prefix_list = []
-        if self.get("second_dir_elements") is not None:
-            elements = self._second_dir_elements(url)
-            for e in elements:
-                prefix_list.append("{0}/{1}".format(url, e.get('href')))
-        else:
-            prefix_list.append(url)
-        print("PrefixList:\n====", '\n===='.join(prefix_list))
-        for guess in BookPathGuess(book_name):
-            for prefix in prefix_list:
-                target = "{0}/{1}/".format(prefix, guess)
-                if self.debug:
-                    print("Try ", target)
-                try:
-                    result = self.get_content_html(target)
-                except:
-                    result = self.get("failure_str")
-
-                if self._check_book_index_page_valid(result):
-                    if self.debug:
-                        print("Guess path success. ", guess)
-                    return result
-                if self.debug:
-                    print("Guess path failed. ", guess)
-        return False
+        return GuessBook.guess_book_url(book_name, self.json)
 
     def _check_book_index_page_valid(self, html):
         return html.find(self.get("failure_str")) < 0
@@ -205,7 +162,9 @@ class BookSite:
             website = self._get_website()
             url = f"{website}{url}"
         req = requests.get(url=url)
-        encoding = re.search('encoding=\"(.*)\"', req.text.split('\n')[0])[1]
+        req.encoding = 'utf-8'
+        print("URL", url, "response==", req.text)
+        encoding = self.get("encoding")
         if not encoding:
             req.encoding = 'utf-8'
         else:

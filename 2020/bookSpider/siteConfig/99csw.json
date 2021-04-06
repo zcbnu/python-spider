@@ -1,0 +1,15 @@
+{
+  "url": "https://www.99csw.com",
+  "resort_chapter": false,
+  "delimiter": "\n",
+  "chapter_root_element": [{"name": "dl","id": "dir"}],
+  "chapter_elements": {"name": "a"},
+  "content_root_element": [{"name": "div", "id": "content"}],
+  "content_elements": {"name": "div"},
+  "guess_book": {
+    "type": "BookSearch",
+    "failure_str": "<title>404",
+    "search_url": "https://www.99csw.com/book/search.php?type=站内&q={0}",
+    "check_element": {"name": "ul","attrs": {"class": "list_box"}, "sub": {"name":"a"}}
+  }
+}

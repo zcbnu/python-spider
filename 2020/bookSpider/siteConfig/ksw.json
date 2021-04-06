@@ -1,6 +1,5 @@
 {
   "url": "https://m.ksw8888.com",
-  "failure_str": "<title>404",
   "resort_chapter": false,
   "delimiter": "\n",
   "chapter_root_element": [{"name": "div","attrs": {"class": "index_list"}}],
@@ -8,5 +7,10 @@
   "content_root_element": [{"name": "div", "attrs": {"class":"articleContent"}}],
   "content_elements": {"name": "p"},
   "content_format": {"replace": ["一哦",""]},
-  "second_dir_elements": [{"name": "div", "attrs": {"class": "kind"}, "sub": {"name": "a"}}]
+  "encoding": "gb2312",
+  "guess_book": {
+    "failure_str": "<title>404",
+    "type": "GuessByName",
+    "second_dir_elements": [{"name": "div", "attrs": {"class": "kind"}, "sub": {"name": "a"}}]
+  }
 }
