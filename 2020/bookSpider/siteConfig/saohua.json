@@ -1,0 +1,17 @@
+{
+  "url": "http://www.saohua.com",
+  "resort_chapter": false,
+  "delimiter": "\n",
+  "chapter_root_element": [{"name": "div","attrs": {"class": "TitleLinks"}}],
+  "chapter_elements": {"name": "a"},
+  "content_root_element": [{"name": "td", "attrs": {"class":"content"}}],
+  "content_elements": {"name": "p"},
+  "encoding": "gb2312",
+  "guess_book": {
+    "type": "GuessByName",
+    "failure_str": "你所访问的网页不存在",
+    "second_dir_elements": [
+      {"name": "div", "attrs": {"class": "nav"}, "sub": {"name": "a"}}
+    ]
+  }
+}

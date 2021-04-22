@@ -43,7 +43,7 @@ class BookSearch(IGuessBook):
                 response.encoding = self.json['encoding']
             else:
                 response.encoding = 'utf-8'
-            return response.text
+            return response.text, result_url
 
     def __init__(self, json):
         self.json = json
@@ -75,8 +75,8 @@ class GuessByName(IGuessBook):
                     result = self.config["failure_str"]
                 print("prefix==", target)
                 if self._check_book_index_page_valid(result):
-                    return result
-        return False
+                    return result, target
+        return False, False
 
     def get_content_html(self, url):
         if url.find('http') < 0:

@@ -13,6 +13,9 @@ class BookPathGuess:
         length = len(s_book_name)
         self.names = []
         self.cur = 0
+        if length == 1:
+            self.names.append(lazy_pinyin(s_book_name))
+            return
         for x in range(length):
             if x > 0:
                 name = self.s_book_name[x:]

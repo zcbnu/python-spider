@@ -132,10 +132,13 @@ class BookSite:
             return "{0}.txt".format(book_name)
         return book_name
 
+    def _book_path(self, book_file):
+        return "books/{0}".format(book_file)
+
     def scratch_book(self, book_name):
         if self.debug:
             print("Start scratch book.")
-        html = self._guess_book_url(book_name)
+        html, d_url = self._guess_book_url(book_name)
         if not html:
             raise Exception("Cannot find valid book url for {0}".format(book_name))
         base_bs = BeautifulSoup(html, 'lxml')
@@ -143,12 +146,12 @@ class BookSite:
         chapter_bs = self._sort_chapters(chapter_bs)
         book_file = self._get_book_file_name(book_name)
         if self.debug:
-            print("Use book file name ", book_file, "chapter number", len(chapter_bs))
+            print("Use book file name ", book_file, "chapter number", len(chapter_bs), "URL:", d_url)
         visited = []
-        if self.downloadFile and os.path.exists(book_file):
+        if self.downloadFile and os.path.exists(self._book_path(book_file)):
             if self.debug:
                 print("Delete file ", book_file)
-            os.remove(book_file)
+            os.remove(self._book_path(book_file))
         for chapter in tqdm(chapter_bs):
             if self.debug:
                 print("Start scratch chapter ", chapter, chapter.text, chapter.get('href'), chapter.string)
@@ -159,6 +162,7 @@ class BookSite:
             if url in visited:
                 continue
             visited.append(url)
+            url = self._complete_url(d_url, url)
             content_html = self.get_content_html(url)
             base_bs = BeautifulSoup(content_html, 'lxml')
             content_bs = self.get_chapter_bs(base_bs, "content_root_element", "content_elements")
@@ -166,11 +170,33 @@ class BookSite:
                 print("Content length", len(content_bs))
             content = self._join_content(content_bs, base_bs)
             if self.downloadFile:
-                with open(book_file, 'a', encoding='utf-8') as f:
+                with open(self._book_path(book_file), 'a', encoding='utf-8') as f:
                     f.write(chapter_name)
                     f.write('\n')
                     f.write(content)
                     f.write('\n')
+
+    def _format_url(self, url):
+        return url.replace('https://', '#S#').replace('http://', '##').replace('//', '/').replace('##', 'http://').replace('#S#',
+                                                                                                                  'https://')
+    def _complete_url(self, dir_url, url):
+        dir_url = self._format_url(dir_url)
+        url = self._format_url(url)
+        i = min(len(dir_url), len(url))
+        l = len(dir_url)
+
+        while True:
+            if i == 0:
+                break
+            e_s = dir_url[l-i:]
+            s_s = url[0:i]
+            if e_s == s_s:
+                ret = dir_url[0:l-i] + url
+                if self.debug:
+                    print("Completing", dir_url, url, ret)
+                return ret
+            i -= 1
+        return url
 
     def _get_website(self):
         url = self.get('url')
@@ -184,6 +210,8 @@ class BookSite:
         if url.find('http') < 0:
             website = self._get_website()
             url = f"{website}{url}"
+        if self.debug:
+            print("URL PATH:", url)
         req = requests.get(url=url)
         req.encoding = 'utf-8'
         if self.debug:

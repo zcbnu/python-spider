@@ -5,8 +5,8 @@ from bookSite import BookSite
 from BookPathGuess import BookPathGuess
 
 if __name__ == '__main__':
-    # site = BookSite(file="siteConfig/99csw.json", debug=False, download=True)
-    # site.scratch_book("毛泽东选集")
+    # site = BookSite(file="siteConfig/ksw.json", debug=True, download=True)
+    # site.scratch_book("艺术的故事")
 
     book_name = "人类简史"
     if len(sys.argv) > 1:
